@@ -30,13 +30,23 @@ def get_poem_random(poems):
         soup.article.header.div.p.clear()
         author = soup.article.header.div.text.replace("\n","").lstrip(" ").rstrip(" ")
         content = markdownify.markdownify(content.prettify())
+        content = content.replace("\n\n\n\n","\n\n  &nbsp;\n  &nbsp;\n\n")
+
         if title is not None and content is not None and author is not None:
-            sql = """ INSERT INTO \"Poems\" (title,content,author) VALUES (%s,%s,%s)   """
             cursor = conn.cursor()
-            values = (title,content,author)
+            sql = """ SELECT 1 FROM \"Poems\" WHERE title=%s AND author=%s LIMIT 1 """
+            values = (title,author)
             cursor.execute(sql,values)
-            conn.commit()
-            count = cursor.rowcount
+            row = cursor.fetchone()
+            if row is None and len(content) < 1000:
+                sql = """ INSERT INTO \"Poems\" (title,content,author) VALUES (%s,%s,%s)   """
+                values = (title,content,author)
+                cursor.execute(sql,values)
+                conn.commit()
+                count = cursor.rowcount
+                print("Poem added:", title)
+            else:
+                print("Poem already in the database or too long")
                              
 
     except Exception as e:
