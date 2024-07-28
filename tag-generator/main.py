@@ -2,12 +2,32 @@ import os
 from dotenv import load_dotenv 
 import psycopg2
 import google.generativeai as genai
+import time
 
 load_dotenv()
 
 DATABASE_URL=os.getenv("DATABASE_URL")
 GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
 
+def create_tag(tag,poem, conn):
+    cursor = conn.cursor()
+    sql = """ SELECT 1 FROM \"Tags\" WHERE name=%s LIMIT 1  """
+    values = (tag,)
+    cursor.execute(sql,values)
+    row = cursor.fetchone()
+    if row is None:
+        sql = """ INSERT INTO \"Tags\" (name) VALUES (%s) """
+        values = (tag,)
+        cursor.execute(sql,values)
+        conn.commit()
+        #print("Tag created:", tag)
+    
+    sql = """ INSERT INTO \"PoemsTags\" (\"poemId\",\"tagId\") VALUES (%s, (SELECT id FROM \"Tags\" WHERE name=%s)) """
+    values = (poem,tag)
+    cursor.execute(sql,values)
+    conn.commit()
+    #print("Tag assigned to poem:",poem,tag)
+    
 
 def connect():
     try:
@@ -28,10 +48,18 @@ def chat():
         "response_mime_type": "text/plain",
         }
 
+        safety_settings={
+            'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
+            'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_NONE',
+            'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_NONE',
+            'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_NONE'
+        }
+
         genai.configure(api_key=GEMINI_API_KEY)
 
         model = genai.GenerativeModel(
         model_name="gemini-1.5-pro",
+        safety_settings=safety_settings,
         generation_config=generation_config,
         )
 
@@ -58,14 +86,27 @@ def chat():
     
 def main():
     connection = connect()
+    session = chat()
     if connection is None:
+        return
+    if session is None:
         return
     cursor = connection.cursor()
     sql = """SELECT id,content FROM \"Poems\" """
     cursor.execute(sql)
     poems = cursor.fetchall()
-    for poem in poems:
-        print(poem[0])
+    for i,poem in enumerate(poems):
+        t = time.process_time()
+        elapsed_time = time.process_time() -t
+        print("Elapsed time:", elapsed_time)
+        response = session.send_message(poem[1])
+        tags = response.text.rstrip(". \n").split(",")
+        tags  = [tag.rstrip(" ").lstrip(" ")   for tag in tags]
+        for tag in tags:
+            create_tag(tag.upper(),poem[0], connection)
+        print("Poem:", i)
+        time.sleep(10)
+        
 
 
 
