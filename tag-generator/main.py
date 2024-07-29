@@ -58,10 +58,9 @@ def chat():
         genai.configure(api_key=GEMINI_API_KEY)
 
         model = genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
+        model_name="gemini-1.5-flash",
         safety_settings=safety_settings,
-        generation_config=generation_config,
-        )
+        generation_config=generation_config)
 
         chat_session = model.start_chat(
         history=[
@@ -92,20 +91,22 @@ def main():
     if session is None:
         return
     cursor = connection.cursor()
-    sql = """SELECT id,content FROM \"Poems\" """
+    sql = """SELECT id,content FROM \"Poems\"  WHERE NOT EXISTS (SELECT FROM \"PoemsTags\" WHERE \"poemId\"=id )   """
     cursor.execute(sql)
     poems = cursor.fetchall()
     for i,poem in enumerate(poems):
+
         t = time.process_time()
         elapsed_time = time.process_time() -t
         print("Elapsed time:", elapsed_time)
+        print("Poem:", i+1,poem[0])
         response = session.send_message(poem[1])
         tags = response.text.rstrip(". \n").split(",")
         tags  = [tag.rstrip(" ").lstrip(" ")   for tag in tags]
         for tag in tags:
             create_tag(tag.upper(),poem[0], connection)
-        print("Poem:", i)
-        time.sleep(10)
+        
+        time.sleep(15+elapsed_time)
         
 
 
