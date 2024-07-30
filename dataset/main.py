@@ -35,15 +35,14 @@ def get_poem_random(poems):
         if title is not None and content is not None and author is not None:
             cursor = conn.cursor()
             sql = """ SELECT 1 FROM \"Poems\" WHERE title=%s AND author=%s LIMIT 1 """
-            values = (title,author)
+            values = (title,author,)
             cursor.execute(sql,values)
             row = cursor.fetchone()
             if row is None and len(content) < 1000:
                 sql = """ INSERT INTO \"Poems\" (title,content,author) VALUES (%s,%s,%s)   """
-                values = (title,content,author)
+                values = (title,content,author,)
                 cursor.execute(sql,values)
                 conn.commit()
-                count = cursor.rowcount
                 print("Poem added:", title)
             else:
                 print("Poem already in the database or too long")
