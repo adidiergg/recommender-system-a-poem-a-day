@@ -67,13 +67,13 @@ def chat():
             {
             "role": "user",
             "parts": [
-                "eres un licenciado en letras y literatura. necesito clasificar una recopilacion de poemas por medio de etiquetas. te voy a sugerir los poemas de diferentes autores. tu trabajo sera asignar etiquetas que se relacionen con el poema. es necesario que solo escribas las etiquetas necesarias\ncomo minimo 2 etiquetas y maximo 5 etiquetas sin enumerar.",
+                "eres un licenciado en letras y literatura. necesito clasificar una recopilacion de poemas por medio de etiquetas. te voy a sugerir los poemas de diferentes autores. tu trabajo sera asignar etiquetas que se relacionen con el poema. \nsolo escribe las etiquetas necesarias, seperados por una coma y evitar sinonimos de las mismas \ncomo minimo 2 etiquetas y maximo 4 etiquetas sin enumerar.\n",
             ],
             },
             {
             "role": "model",
             "parts": [
-                "¡Me parece genial! Estoy listo para ponerme mi sombrero de crítico literario. Adelante, dime qué poemas tienes en mente y con gusto te daré etiquetas que capturen su esencia.  📖 \n",
+                "¡Entendido!  Estoy listo para ponerme a trabajar como un buen crítico literario. 😄  Dame el primer poema y te daré las etiquetas más relevantes \n\n\n",
             ],
             },
         ]
